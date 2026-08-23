@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dew Point Calculator</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px;
+    background: #f4f4f4;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #1a1a1a;
+    display: flex;
+    justify-content: center;
+  }
+  .card {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 28px;
+    max-width: 480px;
+    width: 100%;
+    border: 1px solid #ddd;
+  }
+  h1 {
+    font-size: 22px;
+    margin: 0 0 4px;
+    color: #1a1a1a;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 24px;
+  }
+  .subtitle b { color: #ff6a00; }
+  label {
+    display: block;
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #1a1a1a;
+  }
+  input[type="number"] {
+    width: 100%;
+    font-size: 18px;
+    padding: 10px 12px;
+    margin-bottom: 18px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    color: #1a1a1a;
+  }
+  input[type="number"]:focus {
+    outline: none;
+    border-color: #ff6a00;
+  }
+  .pressure-note {
+    font-size: 13px;
+    color: #666;
+    margin: -8px 0 20px;
+  }
+  .results {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .result-box {
+    background: #fafafa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+  }
+  .result-label {
+    font-size: 13px;
+    color: #666;
+    margin: 0 0 6px;
+  }
+  .result-value {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+    color: #ff6a00;
+  }
+  .warn {
+    font-size: 14px;
+    color: #c0392b;
+    font-weight: bold;
+    margin-top: 16px;
+    text-align: center;
+  }
+  footer {
+    margin-top: 24px;
+    font-size: 12px;
+    color: #999;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Dew point calculator</h1>
+  <p class="subtitle">Formula source: <b>IMD Hygrometric Tables (1000 mb)</b></p>
+
+  <label for="tdb">Dry bulb temperature (&deg;C)</label>
+  <input type="number" id="tdb" value="30" step="0.1">
+
+  <label for="twb">Wet bulb temperature (&deg;C)</label>
+  <input type="number" id="twb" value="24" step="0.1">
+
+  <p class="pressure-note">Pressure fixed at 1000 hPa</p>
+
+  <div class="results">
+    <div class="result-box">
+      <p class="result-label">Dew point</p>
+      <p class="result-value" id="out-dew">--</p>
+    </div>
+    <div class="result-box">
+      <p class="result-label">Relative humidity</p>
+      <p class="result-value" id="out-rh">--</p>
+    </div>
+    <div class="result-box">
+      <p class="result-label">Actual vapor pressure</p>
+      <p class="result-value" id="out-e">--</p>
+    </div>
+    <div class="result-box">
+      <p class="result-label">Saturation vapor pressure</p>
+      <p class="result-value" id="out-es">--</p>
+    </div>
+  </div>
+
+  <p class="warn" id="out-warn"></p>
+
+  <footer>iGNiTED GAMER tools</footer>
+</div>
+
+<script>
+var P = 1000;
+
+function esat(t) {
+  return 6.1121 * Math.exp((18.678 - t / 234.5) * t / (257.14 + t));
+}
+
+function dewFromE(e) {
+  var lo = -80, hi = 60;
+  for (var i = 0; i < 60; i++) {
+    var mid = (lo + hi) / 2;
+    if (esat(mid) < e) { lo = mid; } else { hi = mid; }
+  }
+  return (lo + hi) / 2;
+}
+
+function calc() {
+  var tdb = parseFloat(document.getElementById('tdb').value);
+  var twb = parseFloat(document.getElementById('twb').value);
+  var warn = document.getElementById('out-warn');
+  warn.textContent = '';
+
+  if (isNaN(tdb) || isNaN(twb)) return;
+
+  if (twb > tdb) {
+    warn.textContent = 'Wet bulb temperature cannot exceed dry bulb temperature.';
+    document.getElementById('out-dew').textContent = '--';
+    document.getElementById('out-rh').textContent = '--';
+    document.getElementById('out-e').textContent = '--';
+    document.getElementById('out-es').textContent = '--';
+    return;
+  }
+
+  var esWb = esat(twb);
+  var A = twb >= 0 ? 0.480 / (610 - twb) : 0.480 / (671 - twb);
+  var e = esWb - A * P * (tdb - twb);
+  if (e < 0.01) e = 0.01;
+
+  var esDb = esat(tdb);
+  var rh = 100 * e / esDb;
+  if (rh > 100) rh = 100;
+
+  var dew = dewFromE(e);
+
+  document.getElementById('out-dew').textContent = dew.toFixed(1) + ' \u00b0C';
+  document.getElementById('out-rh').textContent = Math.round(rh) + ' %';
+  document.getElementById('out-e').textContent = e.toFixed(2) + ' hPa';
+  document.getElementById('out-es').textContent = esDb.toFixed(2) + ' hPa';
+}
+
+document.getElementById('tdb').addEventListener('input', calc);
+document.getElementById('twb').addEventListener('input', calc);
+calc();
+</script>
+</body>
+</html>
