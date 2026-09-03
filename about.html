@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — iGNiTED Tools</title>
+<meta name="description" content="Why iGNiTED Tools exists, who builds it, and how the tools get made.">
+<link rel="canonical" href="https://ignitedtools.com/about.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="grain"></div>
+
+<div class="shell">
+
+  <div class="topbar">
+    <a href="index.html" class="brand"><span class="dot"></span>iGNiTED<small>&nbsp;TOOLS</small></a>
+    <div class="top-nav">
+      <a href="index.html#toolboard">Tools</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </div>
+  </div>
+
+  <section class="page-hero">
+    <div class="eyebrow">About</div>
+    <h1>Why this site exists</h1>
+    <div class="byline">One builder · no team · updated when something needs fixing</div>
+  </section>
+
+  <section class="prose">
+    <p><strong>iGNiTED Tools is built and maintained by one person</strong> — me — PGP, a [Scientific Assitant in India Meteorological Department"] who kept running into the same problem: small, specific calculations that should take ten seconds were taking twenty minutes, because the tool that did them either didn't exist, cost money, or buried the answer under three pop-ups and a sign-up form.</p>
+
+    <p>The first few things I built were mostly born out of curiosity and everyday problems I wanted to solve. I wanted simple, reliable tools that gave me the information I was looking for without unnecessary complexity, so I started building them myself.
+
+Over time, those small experiments turned into a collection of useful calculators, utilities, and little web projects. Some were created to solve a specific problem, while others were simply a way to understand something better or experiment with a new idea.
+
+I also enjoy building things around my other interests, especially technology, content creation, and the web. Not everything starts with a grand plan — sometimes it is just a random idea that seems interesting enough to build.
+
+This website is where I keep those projects together. They are simple, practical, and occasionally a little experimental, but each one was built with the same goal: make something useful and share it with others who might find it helpful.</p>
+
+
+    <h2>How tools get built and maintained</h2>
+    <p>Everything on this site is something I use myself, or built for my own use first. That's a deliberate filter — it keeps the list short, but it also means every tool has at least one real user (me) checking it regularly. When something breaks or a number looks wrong, I hear about it because I'm usually the first person to notice.</p>
+    <p>I don't have a team, a release schedule, or a roadmap I can promise. New tools show up when I need one badly enough to build it, or when someone writes in with a request that matches that description. You can see what's actually changed, and when, on the <a href="index.html#log">changelog</a>.</p>
+
+    <h2>How it's funded</h2>
+    <p>The site runs a small amount of display advertising to cover hosting costs and the time spent on upkeep. There's no subscription, no "pro" version, and nothing behind a paywall. If that ever changes for a specific tool, it'll say so clearly on that tool's page before you use it.</p>
+
+    <div class="callout">Have a tool idea, or found something that's calculating wrong? <a href="contact.html">Get in touch</a> — I read every message myself.</div>
+  </section>
+
+  <footer>
+    <span>© <span id="year"></span> iGNiTED Tools · built tool by tool, live on stream</span>
+    <div class="footer-links">
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+      <a href="privacy-policy.html">Privacy Policy</a>
+      <a href="terms.html">Terms</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>
