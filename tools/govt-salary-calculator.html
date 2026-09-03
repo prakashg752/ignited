@@ -3,324 +3,153 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>7th CPC Salary Calculator — iGNiTED tools</title>
-<style>
-  :root{
-    --ink:#101a12;
-    --paper:#f4f1e6;
-    --paper-2:#ece6d4;
-    --ledger-line:#c9c0a2;
-    --brass:#8a6d1f;
-    --brass-bright:#b8912e;
-    --seal:#7a1f1f;
-    --green-ink:#1f4d33;
-    --green-ink-2:#2c6b46;
-    --muted:#6b6352;
-    --card:#fbf9f1;
-    --shadow: 0 1px 0 rgba(0,0,0,.05);
-    --mono: 'Courier New', ui-monospace, Consolas, monospace;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:
-      radial-gradient(1200px 600px at 10% -10%, #fffdf5 0%, transparent 60%),
-      repeating-linear-gradient(0deg, transparent 0 27px, rgba(139,116,42,.055) 27px 28px),
-      var(--paper);
-    color:var(--ink);
-    font-family: Georgia, 'Times New Roman', serif;
-    padding: 28px 16px 80px;
-  }
-  .wrap{max-width: 980px; margin: 0 auto;}
-
-  header.masthead{
-    text-align:center;
-    border-bottom: 3px double var(--brass);
-    padding-bottom: 14px;
-    margin-bottom: 22px;
-    position:relative;
-  }
-  .eyebrow{
-    font-family: var(--mono);
-    letter-spacing: .28em;
-    font-size: 11px;
-    color: var(--brass);
-    text-transform:uppercase;
-  }
-  h1{
-    font-family: Georgia, serif;
-    font-weight:700;
-    font-size: clamp(26px, 4vw, 38px);
-    margin: 6px 0 4px;
-    letter-spacing:.01em;
-  }
-  .subtitle{
-    color: var(--muted);
-    font-size: 14px;
-    font-style: italic;
-  }
-  .seal{
-    position:absolute; right: 0; top: -4px;
-    width:64px; height:64px;
-    border-radius:50%;
-    border: 2px solid var(--seal);
-    display:flex; align-items:center; justify-content:center;
-    transform: rotate(-8deg);
-    font-family: var(--mono);
-    font-size: 9px;
-    color: var(--seal);
-    text-align:center;
-    line-height:1.15;
-    opacity:.75;
-  }
-
-  .grid{
-    display:grid;
-    grid-template-columns: 1.05fr 1fr;
-    gap: 20px;
-  }
-  @media (max-width: 820px){ .grid{grid-template-columns: 1fr;} }
-
-  .card{
-    background: var(--card);
-    border: 1px solid var(--ledger-line);
-    box-shadow: var(--shadow);
-    padding: 20px 22px;
-    position:relative;
-  }
-  .card::before{
-    content:"";
-    position:absolute; left:0; top:0; bottom:0; width:3px;
-    background: var(--brass);
-    opacity:.55;
-  }
-  .card h2{
-    font-size: 13px;
-    letter-spacing:.14em;
-    text-transform: uppercase;
-    color: var(--brass);
-    margin: 0 0 16px;
-    font-family: var(--mono);
-    border-bottom: 1px solid var(--ledger-line);
-    padding-bottom: 8px;
-  }
-
-  label{
-    display:block;
-    font-size: 12.5px;
-    color: var(--muted);
-    margin: 14px 0 5px;
-    font-family: var(--mono);
-    text-transform: uppercase;
-    letter-spacing: .04em;
-  }
-  label:first-of-type{margin-top:0;}
-  select, input[type=number], input[type=text]{
-    width:100%;
-    padding: 9px 10px;
-    border: 1px solid var(--ledger-line);
-    background: #fffef9;
-    color: var(--ink);
-    font-family: var(--mono);
-    font-size: 14.5px;
-    border-radius: 2px;
-  }
-  select:focus, input:focus{
-    outline: 2px solid var(--brass-bright);
-    outline-offset: 1px;
-  }
-  .row2{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .row3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-  @media (max-width: 480px){ .row3{grid-template-columns:1fr;} }
-
-  .hint{ font-size: 11.5px; color: var(--muted); margin-top: 4px; font-style: italic; }
-
-  .toggle-group{ display:flex; gap:8px; margin-top:2px; flex-wrap:wrap; }
-  .toggle{
-    flex:1; min-width: 84px;
-    text-align:center;
-    padding: 8px 6px;
-    border: 1px solid var(--ledger-line);
-    font-family: var(--mono);
-    font-size: 12.5px;
-    cursor:pointer;
-    background:#fffef9;
-    user-select:none;
-  }
-  .toggle.active{ background: var(--green-ink); color:#fff; border-color: var(--green-ink); }
-
-  .basic-readout{
-    margin-top: 16px;
-    padding: 12px 14px;
-    background: var(--paper-2);
-    border: 1px dashed var(--brass);
-    font-family: var(--mono);
-    display:flex; justify-content:space-between; align-items:baseline;
-  }
-  .basic-readout .amt{ font-size: 20px; font-weight:bold; color: var(--green-ink); }
-
-  /* Ledger / results card */
-  .ledger h2{ color: var(--green-ink); }
-  .ledger .card::before{ background: var(--green-ink); }
-  table.ledger-table{
-    width:100%;
-    border-collapse: collapse;
-    font-family: var(--mono);
-    font-size: 13.5px;
-  }
-  table.ledger-table td{
-    padding: 7px 4px;
-    border-bottom: 1px dotted var(--ledger-line);
-  }
-  table.ledger-table td.label{ color: var(--ink); }
-  table.ledger-table td.val{ text-align:right; white-space:nowrap; }
-  table.ledger-table tr.section-head td{
-    padding-top: 14px;
-    font-size: 11px;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--brass);
-    border-bottom: 1px solid var(--brass);
-  }
-  tr.deduction td.val{ color: var(--seal); }
-  tr.gross-row td, tr.net-row td{
-    font-weight:bold;
-    border-top: 2px solid var(--ink);
-    border-bottom: none;
-    padding-top: 10px;
-  }
-  tr.net-row{ }
-  tr.net-row td{
-    font-size: 17px;
-    color: var(--green-ink);
-    border-top: 3px double var(--ink);
-  }
-  .note{
-    margin-top: 18px;
-    font-size: 11.5px;
-    color: var(--muted);
-    line-height:1.55;
-    border-top: 1px solid var(--ledger-line);
-    padding-top: 12px;
-  }
-  .note strong{ color: var(--ink); }
-
-  footer{
-    text-align:center;
-    margin-top: 30px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing:.05em;
-  }
-
-  .checkbox-row{ display:flex; align-items:center; gap:8px; margin-top:14px; }
-  .checkbox-row input{ width:auto; }
-  .checkbox-row label{ margin:0; text-transform:none; letter-spacing:0; font-size:13px; }
-</style>
+<title>Government Salary Calculator — iGNiTED Tools</title>
+<meta name="description" content="Gross and net in-hand pay from the 7th CPC Pay Matrix — DA, HRA, TA, NPS, CGHS and CGEGIS included.">
+<link rel="canonical" href="https://ignitedtools.com/tools/govt-salary-calculator.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
-<div class="wrap">
 
-  <header class="masthead">
-    <div class="seal">GOVT<br>OF<br>INDIA</div>
-    <div class="eyebrow">7th Central Pay Commission · Pay Matrix Reference</div>
+<div class="grain"></div>
+
+<div class="shell">
+
+  <div class="topbar">
+    <a href="../index.html" class="brand"><span class="dot"></span>iGNiTED<small>&nbsp;TOOLS</small></a>
+    <div class="top-nav">
+      <a href="../index.html#toolboard">Tools</a>
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </div>
+
+  <section class="page-hero" style="position:relative;">
+    <div class="govt-badge"><span class="flag">🇮🇳</span>Central Govt Employees</div>
+    <div class="eyebrow">Bay · Calculators</div>
     <h1>Government Salary Calculator</h1>
-    <div class="subtitle">Gross &amp; net in-hand pay after statutory recoveries — iGNiTED tools</div>
-  </header>
+    <p class="lede" style="margin-top:14px; max-width:62ch;">Gross &amp; net in-hand pay from the 7th CPC Pay Matrix — basic pay, DA, HRA, TA, NPS deduction, CGHS and CGEGIS. Reference tool only — verify final figures with your DDO or PAO.</p>
+  </section>
 
-  <div class="grid">
+  <section class="tool-grid-wide">
 
     <!-- INPUT CARD -->
-    <div class="card">
-      <h2>Pay Particulars</h2>
+    <div class="tool-card">
+      <div class="tool-card-head"><h2>Pay Particulars</h2></div>
 
-      <label for="level">Pay Level (7th CPC Matrix)</label>
-      <select id="level"></select>
+      <div class="field">
+        <label for="level">Pay Level (7th CPC Matrix)</label>
+        <select id="level"></select>
+      </div>
 
-      <label for="cell">Cell / Stage (annual increment index)</label>
-      <select id="cell"></select>
+      <div class="field">
+        <label for="cell">Cell / Stage (annual increment index)</label>
+        <select id="cell"></select>
+      </div>
 
       <div class="basic-readout">
-        <span>Basic Pay</span>
+        <span class="lbl">Basic Pay</span>
         <span class="amt" id="basicReadout">₹0</span>
       </div>
 
-      <label for="daRate">Dearness Allowance rate (%)</label>
-      <input type="number" id="daRate" value="60" min="0" max="200" step="1">
-      <div class="hint">Current CG rate: 60% effective 1 Jan 2026. Edit if it has since revised, or for state DA.</div>
-
-      <label>City classification (for HRA)</label>
-      <div class="toggle-group" id="cityToggle">
-        <div class="toggle active" data-city="X">X · Metro</div>
-        <div class="toggle" data-city="Y">Y · Tier-2</div>
-        <div class="toggle" data-city="Z">Z · Other</div>
+      <div class="field" style="margin-top:16px;">
+        <label for="daRate">Dearness Allowance rate (%)</label>
+        <input type="number" id="daRate" value="60" min="0" max="200" step="1">
+        <div class="hint-note">Current CG rate: 60% effective 1 Jan 2026. Edit if it has since revised, or for state DA.</div>
       </div>
-      <div class="hint" id="hraHint"></div>
 
-      <label for="taCity">City for Transport Allowance</label>
-      <select id="taCity">
-        <option value="tpta">Higher TPTA City (Delhi, Mumbai, Kolkata, Chennai, Bengaluru, Hyderabad, Ahmedabad, Pune, Surat, Jaipur, Lucknow, Kanpur, Nagpur, Indore, Coimbatore, Patna, Kochi, Ghaziabad, Vadodara — as notified)</option>
-        <option value="other">Any Other City / Place</option>
-      </select>
-      <div class="hint" id="taHint"></div>
-
-      <label>Retirement / pension scheme</label>
-      <div class="toggle-group" id="schemeToggle">
-        <div class="toggle active" data-scheme="nps">NPS (post-2004 entrant)</div>
-        <div class="toggle" data-scheme="ops">Old Pension / GPF</div>
+      <div class="field">
+        <label>City classification (for HRA)</label>
+        <div class="toggle-group" id="cityToggle">
+          <div class="toggle active" data-city="X">X · Metro</div>
+          <div class="toggle" data-city="Y">Y · Tier-2</div>
+          <div class="toggle" data-city="Z">Z · Other</div>
+        </div>
+        <div class="hint-note" id="hraHint"></div>
       </div>
-      <div class="hint" id="schemeHint"></div>
+
+      <div class="field">
+        <label for="taCity">City for Transport Allowance</label>
+        <select id="taCity">
+          <option value="tpta">Higher TPTA City (Delhi, Mumbai, Kolkata, Chennai, Bengaluru, Hyderabad, Ahmedabad, Pune, Surat, Jaipur, Lucknow, Kanpur, Nagpur, Indore, Coimbatore, Patna, Kochi, Ghaziabad, Vadodara — as notified)</option>
+          <option value="other">Any Other City / Place</option>
+        </select>
+        <div class="hint-note" id="taHint"></div>
+      </div>
+
+      <div class="field">
+        <label>Retirement / pension scheme</label>
+        <div class="toggle-group" id="schemeToggle">
+          <div class="toggle active" data-scheme="nps">NPS (post-2004 entrant)</div>
+          <div class="toggle" data-scheme="ops">Old Pension / GPF</div>
+        </div>
+        <div class="hint-note" id="schemeHint"></div>
+      </div>
 
       <div class="row2">
-        <div>
+        <div class="field">
           <label for="cgegis">CGEGIS subscription (₹/month)</label>
           <input type="number" id="cgegis" value="30" min="0" step="1">
         </div>
-        <div>
+        <div class="field">
           <label for="cghs">CGHS contribution (₹/month)</label>
           <input type="number" id="cghs" value="250" min="0" step="1">
         </div>
       </div>
-      <div class="hint">Auto-set from your Basic Pay slab — override if your department differs.</div>
+      <div class="hint-note">Auto-set from your Basic Pay slab — override if your department differs.</div>
 
-      <div class="row2">
-        <div>
+      <div class="row2" style="margin-top:16px;">
+        <div class="field">
           <label for="ptax">Professional Tax (₹/month)</label>
           <input type="number" id="ptax" value="200" min="0" step="1">
         </div>
-        <div>
+        <div class="field">
           <label for="itax">Income Tax / TDS (₹/month)</label>
           <input type="number" id="itax" value="0" min="0" step="1">
         </div>
       </div>
-      <div class="hint">Professional tax is state-specific (₹0 in several states/UTs) and TDS depends on your total annual tax computation — enter your known figures, or leave as 0/estimate.</div>
+      <div class="hint-note">Professional tax is state-specific (₹0 in several states/UTs) and TDS depends on your total annual tax computation — enter your known figures, or leave as 0/estimate.</div>
 
-      <label for="otherDed">Other recoveries (₹/month)</label>
-      <input type="number" id="otherDed" value="0" min="0" step="1">
-      <div class="hint">Society/CGHS top-up, license fee for govt quarters, loan EMI recovery, festival advance recovery, etc.</div>
+      <div class="field" style="margin-top:16px;">
+        <label for="otherDed">Other recoveries (₹/month)</label>
+        <input type="number" id="otherDed" value="0" min="0" step="1">
+        <div class="hint-note">Society/CGHS top-up, license fee for govt quarters, loan EMI recovery, festival advance recovery, etc.</div>
+      </div>
     </div>
 
     <!-- LEDGER / OUTPUT CARD -->
-    <div class="card ledger">
-      <h2>Salary Ledger</h2>
+    <div class="tool-card">
+      <div class="tool-card-head"><h2>Salary Ledger</h2></div>
       <table class="ledger-table" id="ledgerTable">
         <!-- filled by JS -->
       </table>
 
-      <div class="note">
-        <strong>Basis:</strong> Basic Pay is read directly from the 7th CPC Pay Matrix (entry pay per level, +3% per cell, rounded to the nearest ₹100 — the Commission's own progression rule). HRA follows the current higher slab (X 30% / Y 20% / Z 10%) applicable since DA crossed 50%. Transport Allowance follows the 2017-revised rates by level and city, with DA-on-TA added at your DA rate. NPS deducts 10% of (Basic + DA) from pay; the matching 14% government contribution is <em>not</em> shown here as it isn't part of your in-hand salary. CGEGIS and CGHS are shown at commonly applicable slabs — confirm against your own pay slip, as local orders can vary.
+      <div class="gauge-note">
+        <strong style="color:var(--text-hi);">Basis:</strong> Basic Pay is read directly from the 7th CPC Pay Matrix (entry pay per level, +3% per cell, rounded to the nearest ₹100 — the Commission's own progression rule). HRA follows the current higher slab (X 30% / Y 20% / Z 10%) applicable since DA crossed 50%. Transport Allowance follows the 2017-revised rates by level and city, with DA-on-TA added at your DA rate. NPS deducts 10% of (Basic + DA) from pay; the matching 14% government contribution is <em>not</em> shown here as it isn't part of your in-hand salary. CGEGIS and CGHS are shown at commonly applicable slabs — confirm against your own pay slip, as local orders can vary.
         <br><br>
         This is an estimation tool, not a payslip. Actual recoveries (income tax, GPF/CPF loan installments, HBA/vehicle advance EMIs, etc.) are specific to each employee and department.
       </div>
     </div>
 
-  </div>
+  </section>
 
-  <footer>iGNiTED tools · 7th CPC reference calculator · figures editable for future revisions</footer>
+  <footer>
+    <span>© <span id="year"></span> iGNiTED Tools · built tool by tool, live on stream</span>
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
+      <a href="../privacy-policy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms</a>
+    </div>
+  </footer>
+
 </div>
 
 <script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
 // ---------- 7th CPC Pay Matrix: entry (cell-1) pay per level ----------
 const ENTRY_PAY = {
   "1": 18000, "2": 19900, "3": 21700, "4": 25500, "5": 29200,
@@ -505,7 +334,7 @@ function calculate(){
   if(ptax>0) rows.push(rowDed("Professional Tax", ptax));
   if(itax>0) rows.push(rowDed("Income Tax / TDS", itax));
   if(other>0) rows.push(rowDed("Other recoveries", other));
-  rows.push(`<tr class="gross-row"><td class="label">Total Deductions</td><td class="val" style="color:var(--seal)">− ${fmt(totalDed)}</td></tr>`);
+  rows.push(`<tr class="gross-row"><td class="label">Total Deductions</td><td class="val" style="color:var(--ember)">− ${fmt(totalDed)}</td></tr>`);
 
   rows.push(`<tr class="net-row"><td class="label">Net In-Hand Salary</td><td class="val">${fmt(net)}</td></tr>`);
 

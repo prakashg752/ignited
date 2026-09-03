@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food Calorie & Macro Calculator — iGNiTED Tools</title>
+<meta name="description" content="Look up calories, protein, fat, and carbs for common foods by category, scale to your portion, and build up a running meal total.">
+<link rel="canonical" href="https://ignitedtools.com/tools/food-calorie-calculator.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<div class="grain"></div>
+
+<div class="shell">
+
+  <div class="topbar">
+    <a href="../index.html" class="brand"><span class="dot"></span>iGNiTED<small>&nbsp;TOOLS</small></a>
+    <div class="top-nav">
+      <a href="../index.html#toolboard">Tools</a>
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </div>
+
+  <section class="page-hero">
+    <div class="eyebrow">Bay · Calculators</div>
+    <h1>Food Calorie &amp; Macro Calculator</h1>
+    <p class="lede" style="margin-top:14px; max-width:62ch;">Pick a food by category, enter your portion in grams, and see calories, protein, fat, and carbs scaled to your amount. Add items to build a running meal total.</p>
+  </section>
+
+  <section class="tool-grid">
+
+    <!-- selection card -->
+    <div class="tool-card">
+      <div class="tool-card-head"><h2>Choose Food</h2></div>
+
+      <div class="field">
+        <label for="categorySelect">Category</label>
+        <select id="categorySelect"></select>
+      </div>
+
+      <div class="field">
+        <label for="foodSelect">Food item</label>
+        <select id="foodSelect"></select>
+      </div>
+
+      <div class="field">
+        <label for="qtyInput">Portion (grams)</label>
+        <input type="number" id="qtyInput" value="100" min="1" step="1">
+      </div>
+
+      <button type="button" id="addBtn" class="btn-log">Add to meal log</button>
+
+      <p class="hint-text">Values are typical/average figures per 100g edible portion from <strong style="color:var(--text-hi);">USDA FoodData Central</strong> and the <strong style="color:var(--text-hi);">Indian Food Composition Tables (IFCT 2017, National Institute of Nutrition)</strong>. Actual values vary by brand, variety, and preparation — treat as a general reference, not a lab measurement.</p>
+    </div>
+
+    <!-- results card -->
+    <div class="tool-card">
+      <div class="tool-card-head">
+        <h2 id="foodNameHead">—</h2>
+        <span style="font-family:var(--mono); font-size:11.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em;" id="qtyBadge">per 100g</span>
+      </div>
+
+      <div class="result-list">
+        <div class="result-row">
+          <span class="label">Calories</span>
+          <span class="value" id="out-kcal">—</span>
+        </div>
+        <div class="result-row">
+          <span class="label">Protein</span>
+          <span class="value" id="out-protein">—</span>
+        </div>
+        <div class="result-row">
+          <span class="label">Fat</span>
+          <span class="value" id="out-fat">—</span>
+        </div>
+        <div class="result-row">
+          <span class="label">Carbohydrates</span>
+          <span class="value" id="out-carb">—</span>
+        </div>
+      </div>
+
+      <div style="margin-top:22px;">
+        <div class="macro-bar">
+          <div class="macro-seg-protein" id="segProtein" style="width:33%;"></div>
+          <div class="macro-seg-fat" id="segFat" style="width:33%;"></div>
+          <div class="macro-seg-carb" id="segCarb" style="width:34%;"></div>
+        </div>
+        <div class="macro-legend">
+          <span><span class="swatch" style="background:var(--circuit);"></span>Protein <span id="pctProtein">—</span></span>
+          <span><span class="swatch" style="background:var(--spark);"></span>Fat <span id="pctFat">—</span></span>
+          <span><span class="swatch" style="background:var(--ember);"></span>Carbs <span id="pctCarb">—</span></span>
+        </div>
+      </div>
+
+      <div class="gauge-note">Macro split above is by <em>calorie contribution</em> (protein and carbs at 4 kcal/g, fat at 9 kcal/g), not by gram weight.</div>
+    </div>
+
+  </section>
+
+  <!-- meal log -->
+  <section style="padding-bottom:60px;">
+    <div class="tool-card">
+      <div class="tool-card-head">
+        <h2>Meal Log</h2>
+        <button id="clearAll" class="clear-btn">Clear all</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Food</th>
+              <th>Portion</th>
+              <th>Calories</th>
+              <th>Protein</th>
+              <th>Fat</th>
+              <th>Carbs</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="logBody"></tbody>
+          <tbody id="logTotals"></tbody>
+        </table>
+        <div id="emptyLog" style="text-align:center; padding:40px 0; color:var(--text-dim); font-family:var(--mono); font-size:13px;">No items logged yet — add a food above to start your meal total.</div>
+      </div>
+      <p class="hint-text">Stored with <code>localStorage</code> — only on this device, only in this browser.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>© <span id="year"></span> iGNiTED Tools · built tool by tool, live on stream</span>
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
+      <a href="../privacy-policy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+// ---------- Food database ----------
+// Values per 100g edible portion. Sources: USDA FoodData Central (SR Legacy),
+// Indian Food Composition Tables (IFCT 2017, National Institute of Nutrition).
+// kcal, protein(g), fat(g), carb(g)
+const FOOD_DB = {
+  "Cereals & Grains": [
+    { name: "Rice, white, raw (milled)", kcal: 345, protein: 6.8, fat: 0.5, carb: 78.0 },
+    { name: "Rice, white, cooked", kcal: 130, protein: 2.7, fat: 0.3, carb: 28.0 },
+    { name: "Rice, brown, cooked", kcal: 123, protein: 2.6, fat: 1.0, carb: 26.0 },
+    { name: "Wheat flour (atta), whole grain, raw", kcal: 341, protein: 12.1, fat: 1.7, carb: 71.2 },
+    { name: "Chapati / roti, whole wheat (plain)", kcal: 297, protein: 7.9, fat: 0.9, carb: 62.0 },
+    { name: "Oats, rolled, raw", kcal: 389, protein: 16.9, fat: 6.9, carb: 66.3 },
+    { name: "Bread, white", kcal: 265, protein: 9.0, fat: 3.2, carb: 49.0 },
+    { name: "Bread, whole wheat", kcal: 247, protein: 13.0, fat: 3.4, carb: 41.0 },
+    { name: "Maize / corn, raw", kcal: 365, protein: 9.4, fat: 4.7, carb: 74.0 },
+    { name: "Ragi / finger millet, raw", kcal: 328, protein: 7.3, fat: 1.3, carb: 72.0 },
+  ],
+  "Pulses & Legumes": [
+    { name: "Toor dal (pigeon pea), cooked", kcal: 121, protein: 7.3, fat: 0.4, carb: 22.0 },
+    { name: "Moong dal (split green gram), cooked", kcal: 105, protein: 7.0, fat: 0.4, carb: 19.0 },
+    { name: "Chana dal (split chickpea), cooked", kcal: 164, protein: 8.9, fat: 2.6, carb: 27.0 },
+    { name: "Rajma (kidney beans), cooked", kcal: 127, protein: 8.7, fat: 0.5, carb: 22.8 },
+    { name: "Chickpeas / chana, cooked", kcal: 164, protein: 8.9, fat: 2.6, carb: 27.4 },
+    { name: "Soybean, cooked", kcal: 173, protein: 16.6, fat: 9.0, carb: 9.9 },
+    { name: "Masoor dal (red lentil), cooked", kcal: 116, protein: 9.0, fat: 0.4, carb: 20.0 },
+  ],
+  "Dairy & Eggs": [
+    { name: "Milk, cow, whole", kcal: 61, protein: 3.2, fat: 3.3, carb: 4.8 },
+    { name: "Milk, toned / skimmed", kcal: 37, protein: 3.4, fat: 0.2, carb: 5.0 },
+    { name: "Curd / yogurt, plain", kcal: 60, protein: 3.5, fat: 3.3, carb: 4.7 },
+    { name: "Paneer (Indian cottage cheese)", kcal: 265, protein: 18.3, fat: 20.8, carb: 1.2 },
+    { name: "Cheese, cheddar", kcal: 402, protein: 25.0, fat: 33.0, carb: 1.3 },
+    { name: "Egg, whole, boiled", kcal: 155, protein: 13.0, fat: 11.0, carb: 1.1 },
+    { name: "Egg white, boiled", kcal: 52, protein: 11.0, fat: 0.2, carb: 0.7 },
+    { name: "Butter", kcal: 717, protein: 0.9, fat: 81.0, carb: 0.1 },
+    { name: "Ghee", kcal: 900, protein: 0.0, fat: 100.0, carb: 0.0 },
+  ],
+  "Meat, Poultry & Fish": [
+    { name: "Chicken breast, cooked (skinless)", kcal: 165, protein: 31.0, fat: 3.6, carb: 0.0 },
+    { name: "Chicken thigh, cooked", kcal: 209, protein: 26.0, fat: 10.9, carb: 0.0 },
+    { name: "Mutton / goat meat, cooked", kcal: 258, protein: 25.6, fat: 16.5, carb: 0.0 },
+    { name: "Fish, rohu, cooked", kcal: 97, protein: 16.6, fat: 1.4, carb: 0.0 },
+    { name: "Fish, salmon, cooked", kcal: 208, protein: 20.0, fat: 13.0, carb: 0.0 },
+    { name: "Prawns / shrimp, cooked", kcal: 99, protein: 24.0, fat: 0.3, carb: 0.2 },
+    { name: "Pork, cooked", kcal: 242, protein: 27.0, fat: 14.0, carb: 0.0 },
+  ],
+  "Fruits": [
+    { name: "Banana", kcal: 89, protein: 1.1, fat: 0.3, carb: 22.8 },
+    { name: "Apple", kcal: 52, protein: 0.3, fat: 0.2, carb: 13.8 },
+    { name: "Mango", kcal: 60, protein: 0.8, fat: 0.4, carb: 15.0 },
+    { name: "Orange", kcal: 47, protein: 0.9, fat: 0.1, carb: 11.8 },
+    { name: "Papaya", kcal: 43, protein: 0.5, fat: 0.3, carb: 10.8 },
+    { name: "Guava", kcal: 68, protein: 2.6, fat: 1.0, carb: 14.3 },
+    { name: "Grapes", kcal: 69, protein: 0.7, fat: 0.2, carb: 18.0 },
+    { name: "Watermelon", kcal: 30, protein: 0.6, fat: 0.2, carb: 7.6 },
+    { name: "Pomegranate", kcal: 83, protein: 1.7, fat: 1.2, carb: 18.7 },
+  ],
+  "Vegetables": [
+    { name: "Potato, boiled", kcal: 87, protein: 1.9, fat: 0.1, carb: 20.0 },
+    { name: "Sweet potato, boiled", kcal: 86, protein: 1.6, fat: 0.1, carb: 20.0 },
+    { name: "Tomato, raw", kcal: 18, protein: 0.9, fat: 0.2, carb: 3.9 },
+    { name: "Onion, raw", kcal: 40, protein: 1.1, fat: 0.1, carb: 9.3 },
+    { name: "Spinach / palak, raw", kcal: 23, protein: 2.9, fat: 0.4, carb: 3.6 },
+    { name: "Cauliflower, raw", kcal: 25, protein: 1.9, fat: 0.3, carb: 5.0 },
+    { name: "Cabbage, raw", kcal: 25, protein: 1.3, fat: 0.1, carb: 5.8 },
+    { name: "Carrot, raw", kcal: 41, protein: 0.9, fat: 0.2, carb: 9.6 },
+    { name: "Broccoli, raw", kcal: 34, protein: 2.8, fat: 0.4, carb: 6.6 },
+    { name: "Green peas, boiled", kcal: 84, protein: 5.4, fat: 0.2, carb: 14.0 },
+  ],
+  "Nuts, Seeds & Oils": [
+    { name: "Almonds", kcal: 579, protein: 21.2, fat: 49.9, carb: 21.6 },
+    { name: "Peanuts, roasted", kcal: 567, protein: 25.8, fat: 49.2, carb: 16.1 },
+    { name: "Cashew nuts", kcal: 553, protein: 18.2, fat: 43.9, carb: 30.2 },
+    { name: "Walnuts", kcal: 654, protein: 15.2, fat: 65.2, carb: 13.7 },
+    { name: "Sesame seeds", kcal: 573, protein: 17.7, fat: 49.7, carb: 23.5 },
+    { name: "Groundnut / mustard oil", kcal: 884, protein: 0.0, fat: 100.0, carb: 0.0 },
+    { name: "Olive oil", kcal: 884, protein: 0.0, fat: 100.0, carb: 0.0 },
+    { name: "Coconut, fresh", kcal: 354, protein: 3.3, fat: 33.5, carb: 15.2 },
+  ],
+  "Beverages": [
+    { name: "Tea, black, plain (no milk/sugar)", kcal: 1, protein: 0.0, fat: 0.0, carb: 0.3 },
+    { name: "Tea, with milk & sugar", kcal: 37, protein: 1.0, fat: 1.2, carb: 5.8 },
+    { name: "Coffee, black", kcal: 2, protein: 0.1, fat: 0.0, carb: 0.3 },
+    { name: "Coconut water", kcal: 19, protein: 0.7, fat: 0.2, carb: 3.7 },
+    { name: "Orange juice", kcal: 45, protein: 0.7, fat: 0.2, carb: 10.4 },
+    { name: "Soft drink / cola", kcal: 41, protein: 0.0, fat: 0.0, carb: 10.6 },
+  ],
+  "Indian Snacks & Dishes": [
+    { name: "Samosa, fried", kcal: 262, protein: 3.5, fat: 17.8, carb: 24.0 },
+    { name: "Idli", kcal: 132, protein: 3.9, fat: 0.5, carb: 27.4 },
+    { name: "Dosa, plain", kcal: 168, protein: 3.9, fat: 3.7, carb: 29.0 },
+    { name: "Poha", kcal: 130, protein: 2.5, fat: 3.5, carb: 22.0 },
+    { name: "Upma", kcal: 176, protein: 3.9, fat: 6.4, carb: 27.0 },
+    { name: "Biryani, chicken", kcal: 195, protein: 9.0, fat: 7.0, carb: 22.0 },
+    { name: "Dal makhani", kcal: 143, protein: 6.7, fat: 7.7, carb: 12.6 },
+    { name: "Paneer butter masala", kcal: 220, protein: 8.0, fat: 16.0, carb: 10.0 },
+  ],
+};
+
+const STORAGE_KEY = 'ignited-food-log';
+
+const categorySelect = document.getElementById('categorySelect');
+const foodSelect = document.getElementById('foodSelect');
+const qtyInput = document.getElementById('qtyInput');
+
+Object.keys(FOOD_DB).forEach(cat=>{
+  const opt = document.createElement('option');
+  opt.value = cat;
+  opt.textContent = cat;
+  categorySelect.appendChild(opt);
+});
+
+function populateFoods(){
+  const cat = categorySelect.value;
+  foodSelect.innerHTML = '';
+  FOOD_DB[cat].forEach((food, idx)=>{
+    const opt = document.createElement('option');
+    opt.value = idx;
+    opt.textContent = food.name;
+    foodSelect.appendChild(opt);
+  });
+}
+populateFoods();
+
+function currentFood(){
+  const cat = categorySelect.value;
+  const idx = parseInt(foodSelect.value);
+  return FOOD_DB[cat][idx];
+}
+
+function updateResults(){
+  const food = currentFood();
+  const qty = Math.max(0, parseFloat(qtyInput.value) || 0);
+  const scale = qty / 100;
+
+  const kcal = food.kcal * scale;
+  const protein = food.protein * scale;
+  const fat = food.fat * scale;
+  const carb = food.carb * scale;
+
+  document.getElementById('foodNameHead').textContent = food.name;
+  document.getElementById('qtyBadge').textContent = qty + 'g';
+  document.getElementById('out-kcal').textContent = Math.round(kcal) + ' kcal';
+  document.getElementById('out-protein').textContent = protein.toFixed(1) + ' g';
+  document.getElementById('out-fat').textContent = fat.toFixed(1) + ' g';
+  document.getElementById('out-carb').textContent = carb.toFixed(1) + ' g';
+
+  const kcalProtein = protein * 4;
+  const kcalFat = fat * 9;
+  const kcalCarb = carb * 4;
+  const kcalTotal = kcalProtein + kcalFat + kcalCarb;
+
+  let pP = 0, pF = 0, pC = 0;
+  if(kcalTotal > 0){
+    pP = (kcalProtein / kcalTotal) * 100;
+    pF = (kcalFat / kcalTotal) * 100;
+    pC = (kcalCarb / kcalTotal) * 100;
+  }
+
+  document.getElementById('segProtein').style.width = pP + '%';
+  document.getElementById('segFat').style.width = pF + '%';
+  document.getElementById('segCarb').style.width = pC + '%';
+  document.getElementById('pctProtein').textContent = Math.round(pP) + '%';
+  document.getElementById('pctFat').textContent = Math.round(pF) + '%';
+  document.getElementById('pctCarb').textContent = Math.round(pC) + '%';
+}
+
+categorySelect.addEventListener('change', ()=>{ populateFoods(); updateResults(); });
+foodSelect.addEventListener('change', updateResults);
+qtyInput.addEventListener('input', updateResults);
+
+// ---------- meal log ----------
+function loadLog(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function saveLog(entries){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+}
+
+function renderLog(){
+  const entries = loadLog();
+  const body = document.getElementById('logBody');
+  const totalsBody = document.getElementById('logTotals');
+  const empty = document.getElementById('emptyLog');
+
+  body.innerHTML = '';
+  totalsBody.innerHTML = '';
+
+  if(entries.length === 0){
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  let sumKcal = 0, sumProtein = 0, sumFat = 0, sumCarb = 0;
+
+  entries.forEach(e=>{
+    sumKcal += e.kcal;
+    sumProtein += e.protein;
+    sumFat += e.fat;
+    sumCarb += e.carb;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${e.name}</td>
+      <td>${e.qty}g</td>
+      <td class="hi">${Math.round(e.kcal)} kcal</td>
+      <td>${e.protein.toFixed(1)} g</td>
+      <td>${e.fat.toFixed(1)} g</td>
+      <td>${e.carb.toFixed(1)} g</td>
+      <td style="text-align:right;"><button data-id="${e.id}" class="delete-link">Delete</button></td>`;
+    body.appendChild(tr);
+  });
+
+  const totalsTr = document.createElement('tr');
+  totalsTr.className = 'totals-row';
+  totalsTr.innerHTML = `
+    <td>Total</td>
+    <td></td>
+    <td class="hi">${Math.round(sumKcal)} kcal</td>
+    <td>${sumProtein.toFixed(1)} g</td>
+    <td>${sumFat.toFixed(1)} g</td>
+    <td>${sumCarb.toFixed(1)} g</td>
+    <td></td>`;
+  totalsBody.appendChild(totalsTr);
+
+  document.querySelectorAll('.delete-link').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.getAttribute('data-id');
+      const remaining = loadLog().filter(e=> String(e.id) !== id);
+      saveLog(remaining);
+      renderLog();
+    });
+  });
+}
+
+document.getElementById('addBtn').addEventListener('click', ()=>{
+  const food = currentFood();
+  const qty = Math.max(0, parseFloat(qtyInput.value) || 0);
+  if(qty <= 0) return;
+  const scale = qty / 100;
+
+  const entries = loadLog();
+  entries.push({
+    id: Date.now(),
+    name: food.name,
+    qty: qty,
+    kcal: food.kcal * scale,
+    protein: food.protein * scale,
+    fat: food.fat * scale,
+    carb: food.carb * scale,
+  });
+  saveLog(entries);
+  renderLog();
+});
+
+document.getElementById('clearAll').addEventListener('click', ()=>{
+  if(confirm("Clear your entire meal log on this device? This can't be undone.")){
+    localStorage.removeItem(STORAGE_KEY);
+    renderLog();
+  }
+});
+
+updateResults();
+renderLog();
+</script>
+
+</body>
+</html>

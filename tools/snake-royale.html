@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake Royale — iGNiTED Tools</title>
+<meta name="description" content="Enter your name and play a simple, fast snake game right in your browser. Eat food to grow and speed up, and try to top the leaderboard.">
+<link rel="canonical" href="https://ignitedtools.com/tools/snake-royale.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<div class="grain"></div>
+
+<div class="shell">
+
+  <div class="topbar">
+    <a href="../index.html" class="brand"><span class="dot"></span>iGNiTED<small>&nbsp;TOOLS</small></a>
+    <div class="top-nav">
+      <a href="../index.html#toolboard">Tools</a>
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </div>
+
+  <section class="page-hero">
+    <div class="eyebrow">Bay · Chat Games</div>
+    <h1>Snake Royale</h1>
+    <p class="lede" style="margin-top:14px; max-width:62ch;">Enter your name, then eat your way around the board. Five small pieces of food and one big one are always on the grid — every bite makes you longer and faster. The only way to lose is running into yourself, so keep your tail in mind.</p>
+  </section>
+
+  <section class="game-wrap">
+
+    <!-- game card -->
+    <div class="tool-card">
+      <div class="game-hud">
+        <span>Player <b id="hudName">—</b></span>
+        <span>Score <b id="hudScore">0</b></span>
+        <span>Length <b id="hudLength">3</b></span>
+        <span>Speed <b id="hudSpeed">1.0×</b></span>
+      </div>
+
+      <div class="canvas-frame">
+        <canvas id="gameCanvas" width="600" height="400"></canvas>
+
+        <!-- name entry -->
+        <div class="game-overlay" id="startOverlay">
+          <div class="eyebrow" style="margin-bottom:0;">Ready to play</div>
+          <h2>Enter your name</h2>
+          <input type="text" id="nameInput" class="name-input" maxlength="16" placeholder="Your name" autocomplete="off">
+          <button type="button" id="playBtn" class="game-btn">Play</button>
+          <p style="font-size:12.5px; color:var(--text-dim);">Arrow keys or WASD to steer. On mobile, use the on-screen pad below the board.</p>
+        </div>
+
+        <!-- game over -->
+        <div class="game-overlay hidden" id="overOverlay">
+          <div class="eyebrow" style="margin-bottom:0; color:var(--ember);">Game over</div>
+          <h2>You hit yourself</h2>
+          <p id="finalScoreText">Score: 0 · Length: 3</p>
+          <button type="button" id="retryBtn" class="game-btn">Play Again</button>
+        </div>
+      </div>
+
+      <div class="dpad" id="dpad">
+        <button class="dp-up" data-dir="up">▲</button>
+        <button class="dp-left" data-dir="left">◀</button>
+        <button class="dp-right" data-dir="right">▶</button>
+        <button class="dp-down" data-dir="down">▼</button>
+      </div>
+
+      <p class="hint-text">Your name and score are saved to a shared global leaderboard so every visitor sees the same Top 10. If it can't reach the global board, your run still counts locally on this device.</p>
+    </div>
+
+    <!-- leaderboard -->
+    <div class="tool-card">
+      <div class="tool-card-head"><h2>Top 10 — Global</h2></div>
+      <div class="snake-lb-list" id="lbList"></div>
+      <div id="lbEmpty" style="text-align:center; padding:30px 0; color:var(--text-dim); font-family:var(--mono); font-size:13px;">Loading leaderboard…</div>
+      <button type="button" id="giveUpBtn" class="giveup-btn" disabled>Give Up</button>
+    </div>
+
+  </section>
+
+  <footer>
+    <span>© <span id="year"></span> iGNiTED Tools · built tool by tool, live on stream</span>
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
+      <a href="../privacy-policy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms</a>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+// ---------- grid setup ----------
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const COLS = 30, ROWS = 20, CELL = canvas.width / COLS; // 20px cells at 600x400
+
+const COLOR_HEAD = '#FFC369';
+const COLOR_BODY = '#FF7A47';
+const COLOR_BODY_2 = '#E85D2C';
+const COLOR_FOOD = '#5EEAD4';
+const COLOR_BIG_FOOD = '#FFC369';
+const GRID_LINE = 'rgba(255,255,255,.03)';
+
+let snake, dir, pendingDir, foods, bigFood, score, speedMs, running, playerName;
+let acc = 0, lastTs = 0;
+const BASE_SPEED = 140;
+const MIN_SPEED = 55;
+
+function resetGame(){
+  const cx = Math.floor(COLS/2), cy = Math.floor(ROWS/2);
+  snake = [{x:cx,y:cy},{x:cx-1,y:cy},{x:cx-2,y:cy}];
+  dir = {x:1,y:0};
+  pendingDir = {x:1,y:0};
+  score = 0;
+  speedMs = BASE_SPEED;
+  foods = [];
+  bigFood = null;
+  for(let i=0;i<5;i++) spawnFood(false);
+  spawnFood(true);
+  updateHud();
+}
+
+function occupied(x,y){
+  if(snake.some(s=>s.x===x && s.y===y)) return true;
+  if(foods.some(f=>f.x===x && f.y===y)) return true;
+  if(bigFood && bigFood.x===x && bigFood.y===y) return true;
+  return false;
+}
+
+function spawnFood(big){
+  let x,y,tries=0;
+  do{
+    x = Math.floor(Math.random()*COLS);
+    y = Math.floor(Math.random()*ROWS);
+    tries++;
+  }while(occupied(x,y) && tries < 500);
+  if(big) bigFood = {x,y};
+  else foods.push({x,y});
+}
+
+function updateHud(){
+  document.getElementById('hudName').textContent = playerName || '—';
+  document.getElementById('hudScore').textContent = score;
+  document.getElementById('hudLength').textContent = snake.length;
+  document.getElementById('hudSpeed').textContent = (BASE_SPEED/speedMs).toFixed(1) + '×';
+}
+
+// ---------- input ----------
+function setDir(nx, ny){
+  // prevent reversing directly into the body
+  if(dir.x === -nx && dir.y === -ny) return;
+  pendingDir = {x:nx, y:ny};
+}
+window.addEventListener('keydown', e=>{
+  if(!running) return;
+  switch(e.key){
+    case 'ArrowUp': case 'w': case 'W': setDir(0,-1); e.preventDefault(); break;
+    case 'ArrowDown': case 's': case 'S': setDir(0,1); e.preventDefault(); break;
+    case 'ArrowLeft': case 'a': case 'A': setDir(-1,0); e.preventDefault(); break;
+    case 'ArrowRight': case 'd': case 'D': setDir(1,0); e.preventDefault(); break;
+  }
+});
+document.getElementById('dpad').addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-dir]');
+  if(!btn || !running) return;
+  const d = btn.getAttribute('data-dir');
+  if(d==='up') setDir(0,-1);
+  if(d==='down') setDir(0,1);
+  if(d==='left') setDir(-1,0);
+  if(d==='right') setDir(1,0);
+});
+
+// ---------- game loop ----------
+function step(){
+  dir = pendingDir;
+  const head = snake[0];
+  const nx = (head.x + dir.x + COLS) % COLS;
+  const ny = (head.y + dir.y + ROWS) % ROWS;
+
+  let willGrow = 0;
+  let ateFoodIdx = foods.findIndex(f=> f.x===nx && f.y===ny);
+  let ateBig = bigFood && bigFood.x===nx && bigFood.y===ny;
+
+  if(ateFoodIdx !== -1){
+    score += 10;
+    willGrow = 1;
+    foods.splice(ateFoodIdx,1);
+    spawnFood(false);
+    speedMs = Math.max(MIN_SPEED, speedMs - 4);
+  } else if(ateBig){
+    score += 50;
+    willGrow = 3;
+    bigFood = null;
+    spawnFood(true);
+    speedMs = Math.max(MIN_SPEED, speedMs - 12);
+  }
+
+  // self-collision check: body to compare against depends on whether tail moves away this tick
+  const bodyToCheck = willGrow > 0 ? snake : snake.slice(0, -1);
+  if(bodyToCheck.some(s=> s.x===nx && s.y===ny)){
+    gameOver();
+    return;
+  }
+
+  snake.unshift({x:nx, y:ny});
+  if(willGrow === 0){
+    snake.pop();
+  } else {
+    // add extra segments for big food growth beyond the natural head-add
+    for(let i=1;i<willGrow;i++){
+      snake.push({...snake[snake.length-1]});
+    }
+  }
+
+  updateHud();
+}
+
+function gameOver(reason){
+  running = false;
+  document.getElementById('giveUpBtn').disabled = true;
+  const heading = reason === 'gaveup' ? 'You gave up' : 'You hit yourself';
+  document.getElementById('overOverlay').querySelector('h2').textContent = heading;
+  document.getElementById('finalScoreText').textContent = `Score: ${score} · Length: ${snake.length}`;
+  document.getElementById('overOverlay').classList.remove('hidden');
+  submitScore(playerName, score);
+}
+
+document.getElementById('giveUpBtn').addEventListener('click', ()=>{
+  if(!running) return;
+  gameOver('gaveup');
+});
+
+// ---------- rendering ----------
+function draw(){
+  ctx.fillStyle = '#05060a';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  ctx.strokeStyle = GRID_LINE;
+  ctx.lineWidth = 1;
+  for(let x=0;x<=COLS;x++){
+    ctx.beginPath(); ctx.moveTo(x*CELL,0); ctx.lineTo(x*CELL,canvas.height); ctx.stroke();
+  }
+  for(let y=0;y<=ROWS;y++){
+    ctx.beginPath(); ctx.moveTo(0,y*CELL); ctx.lineTo(canvas.width,y*CELL); ctx.stroke();
+  }
+
+  // small foods
+  ctx.fillStyle = COLOR_FOOD;
+  foods.forEach(f=>{
+    ctx.beginPath();
+    ctx.arc(f.x*CELL+CELL/2, f.y*CELL+CELL/2, CELL*0.28, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  // big food (pulsing)
+  if(bigFood){
+    const pulse = 1 + 0.12*Math.sin(Date.now()/180);
+    ctx.fillStyle = COLOR_BIG_FOOD;
+    ctx.beginPath();
+    ctx.arc(bigFood.x*CELL+CELL/2, bigFood.y*CELL+CELL/2, CELL*0.42*pulse, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // snake
+  snake.forEach((s,i)=>{
+    ctx.fillStyle = i===0 ? COLOR_HEAD : (i % 2 === 0 ? COLOR_BODY : COLOR_BODY_2);
+    const pad = i===0 ? 1 : 2;
+    ctx.beginPath();
+    if(ctx.roundRect){
+      ctx.roundRect(s.x*CELL+pad, s.y*CELL+pad, CELL-pad*2, CELL-pad*2, 5);
+    } else {
+      ctx.rect(s.x*CELL+pad, s.y*CELL+pad, CELL-pad*2, CELL-pad*2);
+    }
+    ctx.fill();
+  });
+
+  // eyes on head
+  if(snake.length){
+    const h = snake[0];
+    ctx.fillStyle = '#1a0d06';
+    const cx = h.x*CELL+CELL/2, cy = h.y*CELL+CELL/2;
+    const ex = dir.x*4, ey = dir.y*4;
+    const ox = dir.x!==0 ? 0 : 5, oy = dir.y!==0 ? 0 : 5;
+    ctx.beginPath(); ctx.arc(cx+ex-oy, cy+ey+ox, 1.8, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx+ex+oy, cy+ey-ox, 1.8, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+function loop(ts){
+  if(!running){ requestAnimationFrame(loop); return; }
+  if(!lastTs) lastTs = ts;
+  const delta = ts - lastTs;
+  lastTs = ts;
+  acc += delta;
+  while(acc >= speedMs){
+    step();
+    acc -= speedMs;
+    if(!running) break;
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// ---------- global leaderboard (Firebase Realtime Database, REST — no SDK needed) ----------
+// Replace this with your own Realtime Database URL (see setup notes for this site).
+// It looks like: https://YOUR-PROJECT-ID-default-rtdb.REGION.firebasedatabase.app
+const FIREBASE_DB_URL = "https://console.firebase.google.com/project/snake-game-aeb8e/database/snake-game-aeb8e-default-rtdb/data/~2F";
+const LB_PATH = "snakeRoyaleLeaderboard";
+const LOCAL_FALLBACK_KEY = 'ignited-snake-leaderboard-local';
+
+function firebaseConfigured(){
+  return FIREBASE_DB_URL && !FIREBASE_DB_URL.includes('YOUR-PROJECT-ID');
+}
+
+function loadLocalLb(){
+  try{
+    const raw = localStorage.getItem(LOCAL_FALLBACK_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function saveLocalScore(name, sc){
+  const lb = loadLocalLb();
+  lb.push({ name: name || 'Anonymous', score: sc });
+  lb.sort((a,b)=> b.score - a.score);
+  localStorage.setItem(LOCAL_FALLBACK_KEY, JSON.stringify(lb.slice(0,10)));
+}
+
+async function submitScore(name, sc){
+  const entry = { name: (name || 'Anonymous').slice(0,20), score: Math.round(sc), ts: Date.now() };
+  if(!firebaseConfigured()){
+    saveLocalScore(entry.name, entry.score);
+    renderLeaderboard();
+    return;
+  }
+  try{
+    const res = await fetch(`${FIREBASE_DB_URL}/${LB_PATH}.json`, {
+      method: 'POST',
+      body: JSON.stringify(entry),
+    });
+    if(!res.ok) throw new Error('write failed');
+  }catch(e){
+    saveLocalScore(entry.name, entry.score);
+  }
+  renderLeaderboard();
+}
+
+async function fetchGlobalLb(){
+  const url = `${FIREBASE_DB_URL}/${LB_PATH}.json?orderBy=%22score%22&limitToLast=10`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('read failed');
+  const data = await res.json();
+  if(!data) return [];
+  return Object.values(data).sort((a,b)=> b.score - a.score);
+}
+
+async function renderLeaderboard(){
+  const list = document.getElementById('lbList');
+  const empty = document.getElementById('lbEmpty');
+  let entries = [];
+  let usedFallback = false;
+
+  if(firebaseConfigured()){
+    try{
+      entries = await fetchGlobalLb();
+    }catch(e){
+      usedFallback = true;
+      entries = loadLocalLb();
+    }
+  } else {
+    usedFallback = true;
+    entries = loadLocalLb();
+  }
+
+  list.innerHTML = '';
+  if(entries.length === 0){
+    empty.style.display = 'block';
+    empty.textContent = usedFallback
+      ? "No runs yet on this device — global board isn't connected."
+      : 'No runs yet — be the first on the board.';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const medalClass = ['gold','silver','bronze'];
+  entries.slice(0,10).forEach((entry,i)=>{
+    const row = document.createElement('div');
+    row.className = 'snake-lb-row';
+    row.innerHTML = `
+      <span class="snake-lb-rank ${medalClass[i]||''}">${i+1}</span>
+      <span class="snake-lb-name">${esc(entry.name)}</span>
+      <span class="snake-lb-score">${entry.score}</span>`;
+    list.appendChild(row);
+  });
+}
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ---------- start / retry flow ----------
+document.getElementById('playBtn').addEventListener('click', startGame);
+document.getElementById('nameInput').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') startGame();
+});
+document.getElementById('retryBtn').addEventListener('click', ()=>{
+  document.getElementById('overOverlay').classList.add('hidden');
+  resetGame();
+  running = true;
+  document.getElementById('giveUpBtn').disabled = false;
+  lastTs = 0; acc = 0;
+});
+
+function startGame(){
+  const val = document.getElementById('nameInput').value.trim();
+  playerName = val || 'Anonymous';
+  document.getElementById('startOverlay').classList.add('hidden');
+  resetGame();
+  running = true;
+  document.getElementById('giveUpBtn').disabled = false;
+  lastTs = 0; acc = 0;
+}
+
+resetGame();
+renderLeaderboard();
+</script>
+
+</body>
+</html>

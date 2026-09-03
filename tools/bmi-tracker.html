@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BMI Tracker — iGNiTED Tools</title>
+<meta name="description" content="Track your BMI over time with a clean visual gauge and trend graph. Metric or imperial units, all data stored only on your device.">
+<link rel="canonical" href="https://ignitedtools.com/tools/bmi-tracker.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<div class="grain"></div>
+
+<div class="shell">
+
+  <div class="topbar">
+    <a href="../index.html" class="brand"><span class="dot"></span>iGNiTED<small>&nbsp;TOOLS</small></a>
+    <div class="top-nav">
+      <a href="../index.html#toolboard">Tools</a>
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
+    </div>
+  </div>
+
+  <section class="page-hero">
+    <div class="eyebrow">Bay · Calculators</div>
+    <h1>BMI Tracker</h1>
+    <p class="lede" style="margin-top:14px; max-width:62ch;">Log your height and weight, watch your BMI trend over time, and see exactly where you sit on the standard categories. Everything is saved only in this browser — nothing is uploaded anywhere.</p>
+  </section>
+
+  <section class="tool-grid">
+
+    <!-- input card -->
+    <div class="tool-card">
+      <div class="tool-card-head">
+        <h2>New Entry</h2>
+        <div class="unit-toggle">
+          <button type="button" id="unitMetric" class="active">Metric</button>
+          <button type="button" id="unitImperial">Imperial</button>
+        </div>
+      </div>
+
+      <form id="bmiForm">
+        <div class="field">
+          <label id="heightLabel">Height (cm)</label>
+          <input id="heightInput" type="number" step="0.1" inputmode="decimal" placeholder="e.g. 172" required>
+        </div>
+        <div class="field">
+          <label id="weightLabel">Weight (kg)</label>
+          <input id="weightInput" type="number" step="0.1" inputmode="decimal" placeholder="e.g. 68" required>
+        </div>
+        <div class="field">
+          <label>Date</label>
+          <input id="dateInput" type="date" required>
+        </div>
+        <button type="submit" class="btn-log">Log Entry</button>
+      </form>
+
+      <p class="hint-text">Stored with <code>localStorage</code> — only on this device, only in this browser. Clear your browser data and it's gone for good.</p>
+    </div>
+
+    <!-- right column -->
+    <div class="stack">
+
+      <!-- current stat + gauge -->
+      <div class="tool-card">
+        <div class="stat-row">
+          <div>
+            <div class="stat-label">Current BMI</div>
+            <div id="currentBmi" class="stat-value-lg">—</div>
+          </div>
+          <div class="stat-right">
+            <div class="stat-label">Category</div>
+            <div id="currentCategory" class="stat-value-md">No data yet</div>
+          </div>
+          <div class="stat-right">
+            <div class="stat-label">Since last entry</div>
+            <div id="currentDelta" class="stat-value-mono">—</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="gauge-bar">
+            <div class="gauge-seg-under"></div>
+            <div class="gauge-seg-normal"></div>
+            <div class="gauge-seg-over"></div>
+            <div class="gauge-seg-obese"></div>
+          </div>
+          <div class="gauge-marker-wrap">
+            <div id="gaugeMarker" class="gauge-marker">
+              <div class="pin"></div>
+              <div class="dot"></div>
+            </div>
+          </div>
+          <div class="gauge-scale">
+            <span>15</span><span>18.5</span><span>25</span><span>30</span><span>40+</span>
+          </div>
+          <div class="gauge-legend">
+            <span style="color:var(--circuit)">Underweight</span>
+            <span style="color:var(--led)">Normal</span>
+            <span style="color:var(--spark)">Overweight</span>
+            <span style="color:var(--ember)">Obese</span>
+          </div>
+        </div>
+
+        <div class="gauge-note">BMI is a screening measure, not a diagnosis — it doesn't account for muscle mass, bone density, or body composition. These thresholds are the general WHO cutoffs; some health bodies recommend lower cutoffs for South Asian populations. If you have concerns about your weight or health, talk to a doctor.</div>
+      </div>
+
+      <!-- graph -->
+      <div class="tool-card">
+        <div class="tool-card-head">
+          <h2>Trend</h2>
+          <span id="entryCount" style="font-family:var(--mono); font-size:11.5px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.04em;">0 entries</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="bmiChart"></canvas>
+          <div id="chartFallback" class="chart-fallback">Chart library didn't load — your history is still saved and shown in the table below.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- history table -->
+  <section style="padding-bottom:60px;">
+    <div class="tool-card">
+      <div class="tool-card-head">
+        <h2>History</h2>
+        <button id="clearAll" class="clear-btn">Clear all entries</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Height</th>
+              <th>Weight</th>
+              <th>BMI</th>
+              <th>Category</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+        <div id="emptyHistory" style="text-align:center; padding:40px 0; color:var(--text-dim); font-family:var(--mono); font-size:13px;">No entries yet — log your first measurement above.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>© <span id="year"></span> iGNiTED Tools · built tool by tool, live on stream</span>
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
+      <a href="../privacy-policy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms</a>
+    </div>
+  </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+const STORAGE_KEY = 'ignited-bmi-entries';
+let unit = 'metric'; // 'metric' | 'imperial'
+let chart = null;
+const chartAvailable = typeof Chart !== 'undefined';
+
+const heightLabel = document.getElementById('heightLabel');
+const weightLabel = document.getElementById('weightLabel');
+const heightInput = document.getElementById('heightInput');
+const weightInput = document.getElementById('weightInput');
+const dateInput = document.getElementById('dateInput');
+const unitMetricBtn = document.getElementById('unitMetric');
+const unitImperialBtn = document.getElementById('unitImperial');
+
+dateInput.valueAsDate = new Date();
+
+if(!chartAvailable){
+  document.getElementById('chartFallback').style.display = 'block';
+}
+
+function setUnit(u){
+  unit = u;
+  if(u === 'metric'){
+    heightLabel.textContent = 'Height (cm)';
+    weightLabel.textContent = 'Weight (kg)';
+    heightInput.placeholder = 'e.g. 172';
+    weightInput.placeholder = 'e.g. 68';
+    unitMetricBtn.classList.add('active');
+    unitImperialBtn.classList.remove('active');
+  } else {
+    heightLabel.textContent = 'Height (in)';
+    weightLabel.textContent = 'Weight (lb)';
+    heightInput.placeholder = 'e.g. 68';
+    weightInput.placeholder = 'e.g. 150';
+    unitImperialBtn.classList.add('active');
+    unitMetricBtn.classList.remove('active');
+  }
+}
+unitMetricBtn.addEventListener('click', ()=> setUnit('metric'));
+unitImperialBtn.addEventListener('click', ()=> setUnit('imperial'));
+
+function loadEntries(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function saveEntries(entries){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+}
+
+function categoryOf(bmi){
+  if(bmi < 18.5) return { name: 'Underweight', color: '#5EEAD4' };
+  if(bmi < 25)   return { name: 'Normal', color: '#34D399' };
+  if(bmi < 30)   return { name: 'Overweight', color: '#FFC369' };
+  return { name: 'Obese', color: '#FF7A47' };
+}
+
+function computeBmi(heightVal, weightVal, u){
+  let heightM, weightKg;
+  if(u === 'metric'){
+    heightM = heightVal / 100;
+    weightKg = weightVal;
+  } else {
+    heightM = heightVal * 0.0254;
+    weightKg = weightVal * 0.453592;
+  }
+  if(heightM <= 0) return null;
+  return weightKg / (heightM * heightM);
+}
+
+function fmtHeight(e){ return e.unit === 'metric' ? `${e.height} cm` : `${e.height} in`; }
+function fmtWeight(e){ return e.unit === 'metric' ? `${e.weight} kg` : `${e.weight} lb`; }
+
+function render(){
+  const entries = loadEntries().sort((a,b)=> new Date(a.date) - new Date(b.date));
+
+  const body = document.getElementById('historyBody');
+  const empty = document.getElementById('emptyHistory');
+  body.innerHTML = '';
+  if(entries.length === 0){
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    [...entries].reverse().forEach(e=>{
+      const cat = categoryOf(e.bmi);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${e.date}</td>
+        <td>${fmtHeight(e)}</td>
+        <td>${fmtWeight(e)}</td>
+        <td class="hi">${e.bmi.toFixed(1)}</td>
+        <td style="color:${cat.color}">${cat.name}</td>
+        <td style="text-align:right;"><button data-id="${e.id}" class="delete-link">Delete</button></td>`;
+      body.appendChild(tr);
+    });
+    document.querySelectorAll('.delete-link').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.getAttribute('data-id');
+        const remaining = loadEntries().filter(e=> String(e.id) !== id);
+        saveEntries(remaining);
+        render();
+      });
+    });
+  }
+
+  document.getElementById('entryCount').textContent = `${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}`;
+
+  const currentBmiEl = document.getElementById('currentBmi');
+  const currentCategoryEl = document.getElementById('currentCategory');
+  const currentDeltaEl = document.getElementById('currentDelta');
+  const marker = document.getElementById('gaugeMarker');
+
+  if(entries.length === 0){
+    currentBmiEl.textContent = '—';
+    currentBmiEl.style.color = '';
+    currentCategoryEl.textContent = 'No data yet';
+    currentCategoryEl.style.color = '';
+    currentDeltaEl.textContent = '—';
+    marker.style.left = '0%';
+  } else {
+    const latest = entries[entries.length - 1];
+    const cat = categoryOf(latest.bmi);
+    currentBmiEl.textContent = latest.bmi.toFixed(1);
+    currentBmiEl.style.color = cat.color;
+    currentCategoryEl.textContent = cat.name;
+    currentCategoryEl.style.color = cat.color;
+
+    if(entries.length > 1){
+      const prev = entries[entries.length - 2];
+      const diff = latest.bmi - prev.bmi;
+      const sign = diff > 0 ? '+' : '';
+      currentDeltaEl.textContent = `${sign}${diff.toFixed(1)}`;
+      currentDeltaEl.style.color = diff > 0 ? '#FF7A47' : (diff < 0 ? '#34D399' : '');
+    } else {
+      currentDeltaEl.textContent = 'First entry';
+      currentDeltaEl.style.color = '';
+    }
+
+    const clamped = Math.max(15, Math.min(40, latest.bmi));
+    const pct = ((clamped - 15) / (40 - 15)) * 100;
+    marker.style.left = pct + '%';
+  }
+
+  if(chartAvailable){
+    const ctx = document.getElementById('bmiChart').getContext('2d');
+    const labels = entries.map(e=> e.date);
+    const data = entries.map(e=> Number(e.bmi.toFixed(1)));
+
+    if(chart) chart.destroy();
+    const gradient = ctx.createLinearGradient(0, 0, 0, 240);
+    gradient.addColorStop(0, 'rgba(255,122,71,.35)');
+    gradient.addColorStop(1, 'rgba(255,122,71,0)');
+
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'BMI',
+          data,
+          borderColor: '#FF7A47',
+          backgroundColor: gradient,
+          fill: true,
+          tension: 0.35,
+          pointRadius: 3,
+          pointBackgroundColor: '#FF7A47',
+          pointBorderColor: '#151821',
+          pointBorderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#151821',
+            borderColor: '#242836',
+            borderWidth: 1,
+            titleColor: '#F2F3F5',
+            bodyColor: '#9498A6',
+            titleFont: { family: 'JetBrains Mono', size: 11 },
+            bodyFont: { family: 'JetBrains Mono', size: 11 },
+            padding: 10,
+          }
+        },
+        scales: {
+          x: { grid: { color: '#242836', drawTicks: false }, ticks: { color: '#5A5F6E', font: { family: 'JetBrains Mono', size: 10 } } },
+          y: { grid: { color: '#242836', drawTicks: false }, ticks: { color: '#5A5F6E', font: { family: 'JetBrains Mono', size: 10 } } }
+        }
+      }
+    });
+  }
+}
+
+document.getElementById('bmiForm').addEventListener('submit', function(ev){
+  ev.preventDefault();
+  const h = parseFloat(heightInput.value);
+  const w = parseFloat(weightInput.value);
+  const date = dateInput.value;
+  if(!h || !w || !date) return;
+
+  const bmi = computeBmi(h, w, unit);
+  if(!bmi || !isFinite(bmi)) return;
+
+  const entries = loadEntries();
+  entries.push({ id: Date.now(), date, height: h, weight: w, unit, bmi });
+  saveEntries(entries);
+
+  heightInput.value = '';
+  weightInput.value = '';
+  render();
+});
+
+document.getElementById('clearAll').addEventListener('click', function(){
+  if(confirm("Delete all saved BMI entries on this device? This can't be undone.")){
+    localStorage.removeItem(STORAGE_KEY);
+    render();
+  }
+});
+
+setUnit('metric');
+render();
+</script>
+
+</body>
+</html>

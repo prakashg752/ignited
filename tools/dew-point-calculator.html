@@ -3,141 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dew Point Calculator</title>
-<style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    padding: 24px;
-    background: #f4f4f4;
-    font-family: Arial, Helvetica, sans-serif;
-    color: #1a1a1a;
-    display: flex;
-    justify-content: center;
-  }
-  .card {
-    background: #ffffff;
-    border-radius: 10px;
-    padding: 28px;
-    max-width: 480px;
-    width: 100%;
-    border: 1px solid #ddd;
-  }
-  h1 {
-    font-size: 22px;
-    margin: 0 0 4px;
-    color: #1a1a1a;
-  }
-  .subtitle {
-    font-size: 14px;
-    color: #666;
-    margin: 0 0 24px;
-  }
-  .subtitle b { color: #ff6a00; }
-  label {
-    display: block;
-    font-size: 15px;
-    font-weight: bold;
-    margin-bottom: 6px;
-    color: #1a1a1a;
-  }
-  input[type="number"] {
-    width: 100%;
-    font-size: 18px;
-    padding: 10px 12px;
-    margin-bottom: 18px;
-    border: 2px solid #ccc;
-    border-radius: 6px;
-    background: #fff;
-    color: #1a1a1a;
-  }
-  input[type="number"]:focus {
-    outline: none;
-    border-color: #ff6a00;
-  }
-  .pressure-note {
-    font-size: 13px;
-    color: #666;
-    margin: -8px 0 20px;
-  }
-  .results {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 8px;
-  }
-  .result-box {
-    background: #fafafa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 14px;
-    text-align: center;
-  }
-  .result-label {
-    font-size: 13px;
-    color: #666;
-    margin: 0 0 6px;
-  }
-  .result-value {
-    font-size: 24px;
-    font-weight: bold;
-    margin: 0;
-    color: #ff6a00;
-  }
-  .warn {
-    font-size: 14px;
-    color: #c0392b;
-    font-weight: bold;
-    margin-top: 16px;
-    text-align: center;
-  }
-  footer {
-    margin-top: 24px;
-    font-size: 12px;
-    color: #999;
-    text-align: center;
-  }
-</style>
+<title>Dew Point Calculator — iGNiTED Tools</title>
+<meta name="description" content="Dew point, relative humidity, and vapor pressure from dry bulb and wet bulb temperature, using the IMD hygrometric method.">
+<link rel="canonical" href="https://ignitedtools.com/tools/dew-point-calculator.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
-<div class="card">
-  <h1>Dew point calculator</h1>
-  <p class="subtitle">Formula source: <b>IMD Hygrometric Tables (1000 mb)</b></p>
 
-  <label for="tdb">Dry bulb temperature (&deg;C)</label>
-  <input type="number" id="tdb" value="30" step="0.1">
+<div class="grain"></div>
 
-  <label for="twb">Wet bulb temperature (&deg;C)</label>
-  <input type="number" id="twb" value="24" step="0.1">
+<div class="shell">
 
-  <p class="pressure-note">Pressure fixed at 1000 hPa</p>
-
-  <div class="results">
-    <div class="result-box">
-      <p class="result-label">Dew point</p>
-      <p class="result-value" id="out-dew">--</p>
-    </div>
-    <div class="result-box">
-      <p class="result-label">Relative humidity</p>
-      <p class="result-value" id="out-rh">--</p>
-    </div>
-    <div class="result-box">
-      <p class="result-label">Actual vapor pressure</p>
-      <p class="result-value" id="out-e">--</p>
-    </div>
-    <div class="result-box">
-      <p class="result-label">Saturation vapor pressure</p>
-      <p class="result-value" id="out-es">--</p>
+  <div class="topbar">
+    <a href="../index.html" class="brand"><span class="dot"></span>iGNiTED<small>&nbsp;TOOLS</small></a>
+    <div class="top-nav">
+      <a href="../index.html#toolboard">Tools</a>
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
     </div>
   </div>
 
-  <p class="warn" id="out-warn"></p>
+  <section class="page-hero">
+    <div class="eyebrow">Bay · Calculators</div>
+    <h1>Dew Point Calculator</h1>
+    <p class="lede" style="margin-top:14px; max-width:62ch;">Formula source: <strong style="color:var(--ember);">IMD Hygrometric Tables</strong>, adapted for any pressure level. Enter dry bulb and wet bulb temperature to get dew point, relative humidity, and vapor pressure.</p>
+  </section>
 
-  <footer>iGNiTED GAMER tools</footer>
+  <section style="padding: 40px 0 60px; max-width: 520px;">
+    <div class="tool-card">
+
+      <div class="field">
+        <label for="tdb">Dry bulb temperature (&deg;C)</label>
+        <input type="number" id="tdb" value="30" step="0.1">
+      </div>
+
+      <div class="field">
+        <label for="twb">Wet bulb temperature (&deg;C)</label>
+        <input type="number" id="twb" value="24" step="0.1">
+      </div>
+
+      <div class="field">
+        <label for="pressure">Pressure level (hPa)</label>
+        <select id="pressure">
+          <option value="1013.25">1013.25 — sea level standard</option>
+          <option value="1000" selected>1000 — default</option>
+          <option value="950">950</option>
+          <option value="900">900</option>
+          <option value="850">850</option>
+          <option value="800">800</option>
+          <option value="700">700</option>
+          <option value="600">600</option>
+          <option value="500">500</option>
+          <option value="custom">Custom…</option>
+        </select>
+        <div class="field-sub" id="customPressureWrap" style="display:none;">
+          <input type="number" id="customPressure" step="1" placeholder="Enter pressure in hPa" value="1000">
+        </div>
+      </div>
+
+      <div class="result-list">
+        <div class="result-row">
+          <span class="label">Dew point</span>
+          <span class="value" id="out-dew">--</span>
+        </div>
+        <div class="result-row">
+          <span class="label">Relative humidity</span>
+          <span class="value" id="out-rh">--</span>
+        </div>
+        <div class="result-row">
+          <span class="label">Actual vapor pressure</span>
+          <span class="value" id="out-e">--</span>
+        </div>
+        <div class="result-row">
+          <span class="label">Saturation vapor pressure</span>
+          <span class="value" id="out-es">--</span>
+        </div>
+      </div>
+
+      <p class="calc-warn" id="out-warn"></p>
+
+    </div>
+  </section>
+
+  <footer>
+    <span>© <span id="year"></span> iGNiTED Tools · built tool by tool, live on stream</span>
+    <div class="footer-links">
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
+      <a href="../privacy-policy.html">Privacy Policy</a>
+      <a href="../terms.html">Terms</a>
+    </div>
+  </footer>
+
 </div>
 
 <script>
-var P = 1000;
+document.getElementById('year').textContent = new Date().getFullYear();
 
 function esat(t) {
   return 6.1121 * Math.exp((18.678 - t / 234.5) * t / (257.14 + t));
@@ -152,9 +116,19 @@ function dewFromE(e) {
   return (lo + hi) / 2;
 }
 
+function getPressure() {
+  var sel = document.getElementById('pressure').value;
+  if (sel === 'custom') {
+    var custom = parseFloat(document.getElementById('customPressure').value);
+    return isNaN(custom) || custom <= 0 ? 1000 : custom;
+  }
+  return parseFloat(sel);
+}
+
 function calc() {
   var tdb = parseFloat(document.getElementById('tdb').value);
   var twb = parseFloat(document.getElementById('twb').value);
+  var P = getPressure();
   var warn = document.getElementById('out-warn');
   warn.textContent = '';
 
@@ -186,9 +160,16 @@ function calc() {
   document.getElementById('out-es').textContent = esDb.toFixed(2) + ' hPa';
 }
 
+document.getElementById('pressure').addEventListener('change', function(){
+  var customWrap = document.getElementById('customPressureWrap');
+  customWrap.style.display = this.value === 'custom' ? 'block' : 'none';
+  calc();
+});
+document.getElementById('customPressure').addEventListener('input', calc);
 document.getElementById('tdb').addEventListener('input', calc);
 document.getElementById('twb').addEventListener('input', calc);
 calc();
 </script>
+
 </body>
 </html>
